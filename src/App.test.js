@@ -1,8 +1,23 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+const originalError = console.error;
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation((msg) => {
+    if (!msg.includes('ReactDOMTestUtils.act is deprecated')) {
+      originalError(msg);
+    }
+  });
+});
+
+afterAll(() => {
+  console.error.mockRestore();
+});
+
+
+test('renders To-Do List title', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const titleElement = screen.getByText(/to-do list/i);
+  expect(titleElement).toBeInTheDocument();
 });
