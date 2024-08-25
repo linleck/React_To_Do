@@ -1,5 +1,3 @@
-# .github/workflows/deploy.yml
-
 name: CI/CD Pipeline for React To-Do List App
 
 on:
@@ -21,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16' # Use the LTS version of Node.js
+          node-version: '16' 
 
       - name: Install dependencies
         run: npm install
@@ -32,9 +30,62 @@ jobs:
       - name: Build the app
         run: npm run build
 
-  deploy:
+  test-ios:
+    runs-on: macos-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Detox CLI
+        run: npm install -g detox-cli
+
+      - name: Build iOS app for testing
+        run: npm run build:ios
+
+      - name: Run iOS tests
+        run: npm run test:ios
+
+  test-android:
     runs-on: ubuntu-latest
     needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Android SDK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          script: echo "Emulator setup complete."
+
+      - name: Build Android app for testing
+        run: npm run build:android
+
+      - name: Run Android tests
+        run: npm run test:android
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, test-ios, test-android]
     if: github.ref == 'refs/heads/main'
 
     steps:
@@ -44,7 +95,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16' # Use the LTS version of Node.js
+          node-version: '16'
 
       - name: Install dependencies
         run: npm install
